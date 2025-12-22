@@ -358,6 +358,12 @@ namespace {
 #define ARCH_REQ_XCOMP_PERM 0x1023
 
 bool init() {
+#if !defined(__x86_64__) && !defined(_M_X64)
+    // SYS_arch_prctl and ARCH_{GET,REQ}_XCOMP_PERM are x86-specific Linux APIs.
+    // On non-x86 Linux (e.g. RISC-V) they are unavailable, so AMX must be
+    // treated as unsupported.
+    return false;
+#else
     unsigned long bitmask = 0;
     long status = syscall(SYS_arch_prctl, ARCH_GET_XCOMP_PERM, &bitmask);
     if (0 != status) return false;
@@ -373,6 +379,7 @@ bool init() {
 
     // XFEATURE_XTILEDATA set successfully, TMUL usage is allowed
     return true;
+#endif
 }
 #elif defined(_WIN32)
 bool init() {

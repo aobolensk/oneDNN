@@ -61,6 +61,14 @@ if(NOT DNNL_ENABLE_JIT_PROFILING)
     endif()
 endif()
 
+if (DNNL_TARGET_ARCH STREQUAL "RV64")
+    # OpenVINO CPU plugin includes oneDNN x64 ISA traits headers unconditionally
+    # in several compilation units. On RV64 builds we still need the corresponding
+    # out-of-line implementations (e.g. get_max_cpu_isa_mask) to avoid unresolved
+    # symbols at plugin load time.
+    list(APPEND SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/x64/cpu_isa_traits.cpp")
+endif()
+
 if(DNNL_WERROR)
     # check if warn_unused_result can be used in an alias
     # only try with DNNL_WERROR enabled to avoid spurious warnings
